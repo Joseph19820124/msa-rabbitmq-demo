@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # RabbitMQ 消息队列
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: msa_rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin123
+    ports:
+      - "5672:5672"
+      - "15672:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - msa-network
+
+  # API 网关
+  api-gateway:
+    build: ./api-gateway
+    container_name: msa_api_gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - USER_SERVICE_URL=http://user-service:3001
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    networks:
+      - msa-network
+
+  # 用户服务
+  user-service:
+    build: ./user-service
+    container_name: msa_user_service
+    ports:
+      - "3001:3001"
+    environment:
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+      - DB_HOST=user-db
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=userdb
+    depends_on:
+      - rabbitmq
+      - user-db
+    networks:
+      - msa-network
+
+  # 用户数据库
+  user-db:
+    image: postgres:15
+    container_name: msa_user_db
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=userdb
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+    networks:
+      - msa-network
+
+  # 邮件服务
+  email-service:
+    build: ./email-service
+    container_name: msa_email_service
+    environment:
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq:5672
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=your-email@gmail.com
+      - SMTP_PASS=your-app-password
+    depends_on:
+      - rabbitmq
+    networks:
+      - msa-network
+
+volumes:
+  rabbitmq_data:
+  user_db_data:
+
+networks:
+  msa-network:
+    driver: bridge
