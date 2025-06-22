@@ -1,0 +1,57 @@
+{
+  "name": "msa-rabbitmq-demo",
+  "version": "1.0.0",
+  "description": "🏗️ Microservices Architecture Demo with RabbitMQ - 基于RabbitMQ的微服务架构演示项目",
+  "main": "index.js",
+  "scripts": {
+    "install:all": "cd api-gateway && npm install && cd ../user-service && npm install && cd ../email-service && npm install",
+    "dev:gateway": "cd api-gateway && npm run dev",
+    "dev:user": "cd user-service && npm run dev",
+    "dev:email": "cd email-service && npm run dev",
+    "start:all": "npm run start:gateway & npm run start:user & npm run start:email",
+    "start:gateway": "cd api-gateway && npm start",
+    "start:user": "cd user-service && npm start",
+    "start:email": "cd email-service && npm start",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "health:check": "curl -s http://localhost:3000/health | jq .",
+    "test:register": "curl -X POST http://localhost:3000/api/users/register -H 'Content-Type: application/json' -d '{\"username\":\"demo_user\",\"email\":\"demo@example.com\",\"password\":\"demo123\",\"firstName\":\"Demo\",\"lastName\":\"User\"}' | jq .",
+    "clean": "docker-compose down -v && docker system prune -f"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Joseph19820124/msa-rabbitmq-demo.git"
+  },
+  "keywords": [
+    "microservices",
+    "rabbitmq",
+    "nodejs",
+    "docker",
+    "api-gateway",
+    "email-service",
+    "user-service",
+    "postgresql",
+    "event-driven",
+    "async-messaging"
+  ],
+  "author": "MSA Demo Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Joseph19820124/msa-rabbitmq-demo/issues"
+  },
+  "homepage": "https://github.com/Joseph19820124/msa-rabbitmq-demo#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "workspaces": [
+    "api-gateway",
+    "user-service", 
+    "email-service"
+  ]
+}
